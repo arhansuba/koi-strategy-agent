@@ -1,0 +1,36 @@
+# Giza for python agents
+giza-agent==0.4.3
+giza-sdk==0.4.3
+giza-cli
+
+# Data processing and fetching
+pandas==1.5.3
+requests==2.28.2
+
+# Machine learning
+scikit-learn==1.2.2
+
+# Blockchain interaction
+web3==5.31.3
+
+# Miscellaneous utilities
+numpy==1.24.3
+matplotlib==3.7.1
+scipy==1.10.1
+
+# Logging and configuration
+loguru==0.7.0
+pydantic==1.10.7
+
+# For creating CLI tools and scripts
+click==8.1.3
+
+# For managing .env files
+python-dotenv==1.0.0
+
+# For handling YAML files (if needed for config)
+PyYAML==6.0
+
+# Testing
+pytest==7.3.1
+pytest-cov==4.0.0
