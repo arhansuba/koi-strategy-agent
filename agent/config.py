@@ -1,3 +1,28 @@
+import os
+
+class Config:
+    def __init__(self):
+        environment = os.getenv('ENVIRONMENT', 'development')
+        if environment == 'development':
+            from environments.development_config import DevelopmentConfig as EnvConfig
+        elif environment == 'testing':
+            from environments.testing_config import TestingConfig as EnvConfig
+        elif environment == 'production':
+            from environments.production_config import ProductionConfig as EnvConfig
+        else:
+            raise ValueError("Invalid environment name")
+        
+        self.load_config(EnvConfig)
+
+    def load_config(self, EnvConfig):
+        for key, value in EnvConfig.__dict__.items():
+            if not key.startswith('__'):
+                setattr(self, key, value)
+
+# Example usage
+config = Config()
+print(config.rpc_url)
+
 # Configuration parameters for the agent
 
 # Network settings

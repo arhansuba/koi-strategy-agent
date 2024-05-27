@@ -1,15 +1,28 @@
-import asyncio
-from typing import Dict
+
+
+import math
 
 class PositionSizer:
-    def __init__(self, risk_threshold: float):
-        self.risk_threshold = risk_threshold
+    def __init__(self, risk_tolerance):
+        """
+        Initialize the position sizer.
 
-    async def size_positions(self, user_portfolios: Dict[str, Dict[str, float]]):
-        # Size positions based on risk detection
-        for user, portfolio in user_portfolios.items():
-            for token, value in portfolio.items():
-                percentage = (value / sum(portfolio.values())) * 100
-                if percentage > self.risk_threshold:
-                    # Reduce position size to meet risk threshold
-                    print(f"Reducing position size for user {user} in {token}")
+        :param risk_tolerance: The risk tolerance of the investor
+        """
+        self.risk_tolerance = risk_tolerance
+
+    def calculate_position_size(self, stock_price, risk_level):
+        """
+        Calculate the optimal position size based on the risk level.
+
+        :param stock_price: The current price of the stock
+        :param risk_level: The risk level of the stock
+        :return: The optimal position size
+        """
+        # Calculate the maximum position size based on the risk tolerance and risk level
+        max_position_size = self.risk_tolerance / risk_level
+
+        # Calculate the number of shares to purchase based on the maximum position size and stock price
+        position_size = math.floor(max_position_size / stock_price)
+
+        return position_size

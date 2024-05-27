@@ -1,8 +1,9 @@
-# Helper functions
+
 
 import json
 import requests
 from web3 import Web3
+from myproject.constants import MAINNET_RPC_URL, ROPSTEN_RPC_URL, ZKSYNC_RPC_URL
 
 def get_contract_abi(contract_name: str) -> dict:
     """Loads the ABI for a given contract from the contracts/ directory."""
@@ -17,7 +18,7 @@ def get_web3_provider(network: str) -> Web3:
     elif network == "ropsten":
         rpc_url = ROPSTEN_RPC_URL
     elif network == "zksync":
-rpc_url = ZKSYNC_RPC_URL
+        rpc_url = ZKSYNC_RPC_URL
     else:
         raise ValueError(f"Invalid network: {network}")
     return Web3(Web3.HTTPProvider(rpc_url))
