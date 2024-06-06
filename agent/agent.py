@@ -2,7 +2,7 @@ import asyncio
 import logging
 import json
 import numpy as np
-from typing import Dict, List
+from typing import Dict
 
 from agent.risk_management.portfolio_monitor import PortfolioMonitor
 from agent.risk_management.risk_detector import RiskDetector
@@ -19,7 +19,6 @@ from agent.data_ingestion.data_preprocessor import DataPreprocessor
 from agent.config import Config
 from agent.utils.logger import setup_logging
 
-from giza.agents.action import action
 from giza.agents import AgentResult, GizaAgent
 from giza.agents.task import task
 

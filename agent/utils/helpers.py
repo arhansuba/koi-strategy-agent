@@ -1,7 +1,6 @@
 
 
 import json
-import requests
 from web3 import Web3
 from .constants import MAINNET_RPC_URL, ROPSTEN_RPC_URL, ZKSYNC_RPC_URL
 from agent.utils import constants

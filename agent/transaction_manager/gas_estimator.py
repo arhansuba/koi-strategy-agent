@@ -1,4 +1,4 @@
-import asyncio
+#import asyncio
 #from zksync import Web3, ZkSync
 
 import pandas as pd
