@@ -1,5 +1,5 @@
 import asyncio
-from zksync import Web3, ZkSync
+#from zksync import Web3, ZkSync
 
 import pandas as pd
 import numpy as np
