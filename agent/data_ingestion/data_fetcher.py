@@ -1,66 +1,67 @@
 import requests
-
-
-import requests
-import pandas as pd
-from sqlalchemy import create_engine
+from web3 import Web3
 
 class DataFetcher:
-    def __init__(self, source_type, source_config):
+    def __init__(self, koi_finance_api_url, web3_provider_url):
         """
-        Initialize the data fetcher with the source type and configuration.
+        Initialize the data fetcher with the Koi Finance API URL and Web3 provider URL.
 
-        :param source_type: The type of source (e.g. API, database, file)
-        :param source_config: The configuration for the source (e.g. API endpoint, database connection string, file path)
+        :param koi_finance_api_url: The URL of the Koi Finance API
+        :param web3_provider_url: The URL of the Web3 provider (e.g. Infura, Alchemy)
         """
-        self.source_type = source_type
-        self.source_config = source_config
+        self.koi_finance_api_url = koi_finance_api_url
+        self.web3_provider_url = web3_provider_url
+        self.w3 = Web3(Web3.HTTPProvider(web3_provider_url))
 
-    def fetch_data(self):
+    def fetch_user_portfolio(self, user_address):
         """
-        Fetch data from the source.
+        Fetch a user's portfolio data from Koi Finance.
 
-        :return: The fetched data
+        :param user_address: The Ethereum address of the user
+        :return: The user's portfolio data
         """
-        if self.source_type == 'API':
-            return self.fetch_data_from_api()
-        elif self.source_type == 'database':
-            return self.fetch_data_from_database()
-        elif self.source_type == 'file':
-            return self.fetch_data_from_file()
-        else:
-            raise ValueError(f"Unsupported source type: {self.source_type}")
-
-    def fetch_data_from_api(self):
-        """
-        Fetch data from an API.
-
-        :return: The fetched data
-        """
-        url = self.source_config['url']
-        params = self.source_config.get('params', {})
-        response = requests.get(url, params=params)
+        # Call the Koi Finance API to get the user's portfolio data
+        response = requests.get(f'{self.koi_finance_api_url}/users/{user_address}/portfolio')
         response.raise_for_status()
         return response.json()
 
-    def fetch_data_from_database(self):
+    def fetch_token_prices(self, token_addresses):
         """
-        Fetch data from a database.
+        Fetch the prices of a list of tokens from Koi Finance.
 
-        :return: The fetched data
+        :param token_addresses: A list of Ethereum addresses of the tokens
+        :return: A dictionary with the token prices
         """
-        connection_string = self.source_config['connection_string']
-        engine = create_engine(connection_string)
-        query = self.source_config['query']
-        data = pd.read_sql_query(query, engine)
-        return data
+        # Call the Koi Finance API to get the token prices
+        response = requests.get(f'{self.koi_finance_api_url}/tokens/prices', params={'addresses': token_addresses})
+        response.raise_for_status()
+        return response.json()
 
-    def fetch_data_from_file(self):
+    def fetch_contract_data(self, contract_address, function_name, *args):
         """
-        Fetch data from a file.
+        Fetch data from a Koi Finance smart contract.
 
-        :return: The fetched data
+        :param contract_address: The Ethereum address of the contract
+        :param function_name: The name of the function to call
+        :param args: The arguments to pass to the function
+        :return: The result of the function call
         """
-        file_path = self.source_config['file_path']
-        data = pd.read_csv(file_path)
-        return data
+        # Get the contract instance
+        contract_instance = self.w3.eth.contract(address=contract_address, abi=self.get_abi(contract_address))
+
+        # Call the function on the contract
+        result = contract_instance.functions[function_name](*args).call()
+
+        return result
+
+    def get_abi(self, contract_address):
+        """
+        Get the ABI (Application Binary Interface) for a Koi Finance smart contract.
+
+        :param contract_address: The Ethereum address of the contract
+        :return: The ABI of the contract
+        """
+        # Call the Koi Finance API to get the ABI
+        response = requests.get(f'{self.koi_finance_api_url}/contracts/{contract_address}/abi')
+        response.raise_for_status()
+        return response.json()

@@ -31,14 +31,16 @@ class GasEstimator:
         """
         # Handle missing values using mean imputation
         imputer = SimpleImputer(strategy='mean')
-        self.data[['temperature', 'humidity', 'pressure']] = imputer.fit_transform(self.data[['temperature', 'humidity', 'pressure']])
+        numerical_features = self.data.select_dtypes(include=['int64', 'float64']).columns
+        self.data[numerical_features] = imputer.fit_transform(self.data[numerical_features])
 
         # Encode categorical variables using one-hot encoding
-        self.data = pd.get_dummies(self.data, columns=['season', 'day_of_week'])
+        categorical_features = self.data.select_dtypes(include=['object']).columns
+        self.data = pd.get_dummies(self.data, columns=categorical_features)
 
         # Scale numerical variables using standard scaling
         scaler = StandardScaler()
-        self.data[['temperature', 'humidity', 'pressure']] = scaler.fit_transform(self.data[['temperature', 'humidity', 'pressure']])
+        self.data[numerical_features] = scaler.fit_transform(self.data[numerical_features])
 
         return self.data
 
@@ -50,18 +52,25 @@ class GasEstimator:
         """
         # Select the top 10 features using recursive feature elimination
         selector = SelectKBest(f_regression, k=10)
-        self.data = selector.fit_transform(self.data.drop(self.target_variable, axis=1), self.data[self.target_variable])
+        X = self.data.drop(self.target_variable, axis=1)
+        y = self.data[self.target_variable]
+        X_selected = selector.fit_transform(X, y)
 
-        return self.data
+        # Get the selected feature names
+        selected_features = X.columns[selector.get_support(indices=True)]
 
-    def train_model(self):
+        return X_selected, selected_features
+
+    def train_model(self, X, y):
         """
         Train a random forest regressor on the preprocessed data.
 
+        :param X: The feature matrix
+        :param y: The target variable
         :return: The trained model
         """
         # Split the data into training and testing sets
-        X_train, X_test, y_train, y_test = train_test_split(self.data.drop(self.target_variable, axis=1), self.data[self.target_variable], test_size=0.2, random_state=42)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
         # Create a pipeline with PCA and random forest regressor
         pipeline = Pipeline([
@@ -74,11 +83,13 @@ class GasEstimator:
 
         return pipeline
 
-    def evaluate_model(self, model):
+    def evaluate_model(self, model, X_test, y_test):
         """
         Evaluate the performance of the trained model on the testing data.
 
         :param model: The trained model
+        :param X_test: The testing feature matrix
+        :param y_test: The testing target variable
         :return: The evaluation metrics
         """
         # Make predictions on the testing data
@@ -101,15 +112,18 @@ class GasEstimator:
         self.data = self.preprocess_data()
 
         # Select the most important features
-        self.data = self.feature_selection()
+        X_selected, selected_features = self.feature_selection()
+
+        # Split the data into training and testing sets
+        X_train, X_test, y_train, y_test = train_test_split(X_selected, self.data[self.target_variable], test_size=0.2, random_state=42)
 
         # Train the model
-        model = self.train_model()
+        model = self.train_model(X_train, y_train)
 
         # Evaluate the model
-        mse, mae, r2 = self.evaluate_model(model)
+        mse, mae, r2 = self.evaluate_model(model, X_test, y_test)
 
         # Make predictions on the entire dataset
-        y_pred = model.predict(self.data.drop(self.target_variable, axis=1))
+        y_pred = model.predict(X_selected)
 
         return y_pred, mse, mae, r2

@@ -24,7 +24,8 @@ config = Config()
 print(config.rpc_url)
 
 # Configuration parameters for the agent
-
+CHAIN_ID = 1
+NETWORK_ID = 1
 # Network settings
 NETWORK = "zksync"  # Can be "mainnet", "ropsten", or "zksync"
 
