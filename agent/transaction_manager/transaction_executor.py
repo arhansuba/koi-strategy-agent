@@ -4,7 +4,9 @@ import pandas as pd
 import numpy as np
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from transaction_confirmator import TransactionConfirmator
+from .transaction_confirmator import TransactionConfirmator
+
+#from transaction_manager import TransactionConfirmator
 
 class TransactionExecutor:
     def __init__(self, db_url, confirmator):

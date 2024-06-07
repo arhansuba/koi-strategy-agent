@@ -42,7 +42,7 @@ class Config:
         self.maximum_position_size = float(os.getenv("MAXIMUM_POSITION_SIZE", self.maximum_position_size))
         self.maximum_drawdown = float(os.getenv("MAXIMUM_DRAWDOWN", self.maximum_drawdown))
 
-# Example usage
+
 config = Config()
 print(config.network)
 print(config.koi_token_address)

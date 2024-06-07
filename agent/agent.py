@@ -3,27 +3,32 @@ import logging
 import json
 import numpy as np
 from typing import Dict
-
-from agent.risk_management.portfolio_monitor import PortfolioMonitor
-from agent.risk_management.risk_detector import RiskDetector
-from agent.risk_management.position_sizer import PositionSizer
-from agent.strategy_engine.machine_learning_model import MachineLearningModel
-from agent.strategy_engine.prediction_model import PredictionModel
-from agent.strategy_engine.strategy_optimizer import StrategyOptimizer
-from agent.transaction_manager.gas_estimator import GasEstimator
-from agent.transaction_manager.transaction_confirmator import TransactionConfirmator
-from agent.transaction_manager.transaction_executor import TransactionExecutor
-from agent.data_ingestion.data_fetcher import DataFetcher
-from agent.data_ingestion.data_loader import DataLoader
-from agent.data_ingestion.data_preprocessor import DataPreprocessor
-from agent.config import Config
-from agent.utils.logger import setup_logging
+from risk_management.portfolio_monitor import PortfolioMonitor
+from risk_management.risk_detector import RiskDetector
+from risk_management.position_sizer import PositionSizer
+from strategy_engine.machine_learning_model import MachineLearningModel
+from strategy_engine.prediction_model import PredictionModel
+from strategy_engine.strategy_optimizer import StrategyOptimizer
+from transaction_manager.gas_estimator import GasEstimator
+from transaction_manager.transaction_confirmator import TransactionConfirmator
+from transaction_manager.transaction_executor import TransactionExecutor
+from data_ingestion.data_fetcher import DataFetcher
+from data_ingestion.data_loader import DataLoader
+from data_ingestion.data_preprocessor import DataPreprocessor
+from config import Config
+from utils.logger import setup_logger
 
 from giza.agents import AgentResult, GizaAgent
 from giza.agents.task import task
 
 # Set up logging
-setup_logging()
+logger_name = "my_logger"
+log_file = "agent.log"  # Boş bir değer
+setup_logger(logger_name, log_file)
+
+
+
+
 
 class Agent:
     def __init__(self, config: Config, data_loader: DataLoader):
@@ -32,25 +37,26 @@ class Agent:
         self.user_portfolios = self.data_loader.load_user_portfolios()
 
         # Risk Management
-        self.risk_detector = RiskDetector(risk_threshold=self.config.risk_threshold)
-        self.position_sizer = PositionSizer(risk_threshold=self.config.risk_threshold)
+        data =  data_loader = DataLoader(data_file="data/user_portfolios.json")
+        self.risk_detector = RiskDetector(data)
+        self.position_sizer = PositionSizer(risk_tolerance=self.config.risk_threshold, account_size=self.user_portfolios)
         self.portfolio_monitor = PortfolioMonitor(self.user_portfolios)
 
         # Strategy Engine
-        self.ml_model = MachineLearningModel()
-        self.prediction_model = PredictionModel()
-        self.strategy_optimizer = StrategyOptimizer()
+        self.ml_model = MachineLearningModel(data=self.user_portfolios, target_variable=self.user_portfolios)
+        self.prediction_model = PredictionModel(data=self.user_portfolios, target_variable=self.user_portfolios)
+        self.strategy_optimizer = StrategyOptimizer(data=self.user_portfolios, target_variable=self.user_portfolios, strategy_params=self.user_portfolios)
 
         # Transaction Management
-        self.gas_estimator = GasEstimator()
-        self.transaction_confirmator = TransactionConfirmator()
-        self.transaction_executor = TransactionExecutor()
+        self.gas_estimator = GasEstimator(data=self.user_portfolios, target_variable=self.user_portfolios)
+        self.transaction_confirmator = TransactionConfirmator(data=self.user_portfolios, target_variable=self.user_portfolios)
+        self.transaction_executor = TransactionExecutor(db_url="sqlite:///transactions.db", confirmator=self.transaction_confirmator)
 
         # Data Ingestion
-        self.data_fetcher = DataFetcher()
+        self.data_fetcher = DataFetcher(koi_finance_api_url='https://dapp.koi.finance/pool', web3_provider_url="http://127.0.0.1:8545" )
         self.data_preprocessor = DataPreprocessor()
 
-    @task
+    @task 
     async def create_agent(self):
         agent = GizaAgent(
             id=self.config.model_id,
@@ -62,7 +68,7 @@ class Agent:
 
     @task
     async def predict(self, agent: GizaAgent, X: np.ndarray):
-        prediction = await agent.predict(input_feed={"val": X}, verifiable=True, job_size="XL")
+        prediction = await Predict(input_feed={"val": X}, verifiable=True, job_size="XL")
         return prediction
 
     @task
@@ -216,8 +222,11 @@ if __name__ == "__main__":
     data_loader = DataLoader(data_file="data/user_portfolios.json")
 
     agent = Agent(config, data_loader)
-
+async def main():
+   
+    agent = Agent(config, data_loader)
+    await agent.run()
     try:
-        asyncio.run(agent.run())
+        asyncio.run(asyncio.run(main()))
     except KeyboardInterrupt:
         logging.info("Shutting down...")
