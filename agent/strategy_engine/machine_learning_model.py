@@ -8,6 +8,10 @@ from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import SelectKBest, f_classif
 from sklearn.decomposition import PCA
 from sklearn.model_selection import GridSearchCV
+import onnx
+from onnx import optimizer
+from onnx import shape_inference
+import torch
 
 class MachineLearningModel:
     def __init__(self, data, target_variable):
@@ -132,3 +136,25 @@ class MachineLearningModel:
         accuracy, report, matrix= self.evaluate_model(model, X_test, y_test)
 
         return accuracy, report, matrix
+data = pd.DataFrame({
+    'feature1': [1, 2, 3, 4, 5],
+    'feature2': [6, 7, 8, 9, 10],
+    'target': [0, 1, 0, 1, 0]  # Hedef değişken
+})
+
+# Hedef değişkenin adı
+target_variable = 'target'
+
+model = MachineLearningModel(data, target_variable)  
+X_train, X_test, y_train, y_test = train_test_split(data, target_variable, test_size=0.2, random_state=42)
+model.fit(X_train, y_train)
+
+# Eğitilmiş modeli kaydedin
+torch.save(model, "machine_learning_model.pt")
+# Eğitilmiş PyTorch modelinin yüklenmesi
+model = torch.load("machine_learning_model.pt")
+
+# Modeli ONNX formatına dönüştürme
+input_sample = torch.randn(1, 3, 224, 224)
+onnx_path = "machine_learning_model.onnx"
+torch.onnx.export(model, input_sample, onnx_path, export_params=True)
