@@ -68,7 +68,7 @@ class Agent:
 
     @task
     async def predict(self, agent: GizaAgent, X: np.ndarray):
-        prediction = await Predict(input_feed={"val": X}, verifiable=True, job_size="XL")
+        prediction = await prediction(input_feed={"val": X}, verifiable=True, job_size="XL")
         return prediction
 
     @task
