@@ -49,11 +49,6 @@ The functionality of the agent covers:
   - Facilitating the creation and management of concentrated liquidity pools.
   - Implementing sophisticated yield farming strategies to maximize returns and profitability.
 
-### Attack Vectors
-Identified potential security vulnerabilities and attack vectors include:
-- **Smart Contract Exploits:** Ensuring smart contracts are thoroughly audited to prevent vulnerabilities.
-- **Front-running Attacks:** Implementing measures such as transaction ordering mechanisms to prevent front-running.
-- **Liquidity Pool Manipulation:** Regular monitoring and implementing safeguards to protect against manipulation.
 
 Mitigation measures:
 - Conduct regular security audits.
