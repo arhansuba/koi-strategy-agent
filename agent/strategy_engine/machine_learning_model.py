@@ -8,9 +8,9 @@ from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import SelectKBest, f_classif
 from sklearn.decomposition import PCA
 from sklearn.model_selection import GridSearchCV
-import onnx
-from onnx import optimizer
-from onnx import shape_inference
+#import onnx
+#from onnx import optimizer
+#from onnx import shape_inference
 import torch
 
 class MachineLearningModel:
